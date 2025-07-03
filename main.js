@@ -44,7 +44,7 @@ const playerState = { velocity: new THREE.Vector3(0, 0, 0), speed: 5, jumpStreng
 // PROCEDURALLY CODED ROBLOX-STYLE CHARACTER
 function createCodedCharacter() {
     const playerGroup = new THREE.Group();
-    const skinMaterial = new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.8 }); 
+    const skinMaterial = new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.8 });
 
     const body = new THREE.Mesh(
         new THREE.BoxGeometry(1.2, 1.5, 0.6),
@@ -53,7 +53,10 @@ function createCodedCharacter() {
     body.position.y = 1.4 + 1.5 / 2;
     playerGroup.add(body);
 
+    // --- THIS IS THE CORRECTED LINE ---
     const head = new THREE.Mesh(new CapsuleGeometry(0.45, 0.3, 8, 16), skinMaterial);
+    // ------------------------------------
+    
     head.position.y = body.position.y + 1.5 / 2 + 0.3 / 2 + 0.45;
     playerGroup.add(head);
 
@@ -82,7 +85,7 @@ function createCodedCharacter() {
 }
 
 const player = createCodedCharacter();
-player.position.y = -0.7; // Adjust group pivot to place feet on ground
+player.position.y = -0.7;
 scene.add(player);
 
 
