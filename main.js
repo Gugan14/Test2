@@ -151,7 +151,7 @@ function animate() {
 
     const moveInput = new THREE.Vector2();
     if (joystickState.active) {
-        moveInput.set(joystickState.move.x, -joystickState.move.y);
+        moveInput.set(joystickState.move.x, joystickState.move.y);
     } else {
         if (keys.w || keys.arrowup) moveInput.y = 1;
         if (keys.s || keys.arrowdown) moveInput.y = -1;
