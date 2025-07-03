@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>3D Coin Collector</title>
+    <title>3D Coded Character Game</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -27,11 +27,12 @@
         <button id="jump-button">JUMP</button>
     </div>
 
-    <!-- Import Three.js from a CDN -->
+    <!-- The corrected importmap that includes the 'addons' path -->
     <script type="importmap">
         {
             "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
             }
         }
     </script>
