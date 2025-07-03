@@ -70,11 +70,9 @@ body {
     font-size: 18px;
     font-weight: bold;
     border: 2px solid rgba(255, 255, 255, 0.5);
-    /* Hide on desktop, show on touch devices */
     display: none;
 }
 
-/* A media query to show the button only on devices with touchscreens */
 @media (pointer: coarse) {
     #jump-button {
         display: block;
