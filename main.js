@@ -1,8 +1,7 @@
 import * as THREE from 'three';
-// NEW: We need to import the CapsuleGeometry since it's not a core geometry
 import { CapsuleGeometry } from 'three/addons/geometries/CapsuleGeometry.js';
 
-// 1. SCENE SETUP (No changes)
+// 1. SCENE SETUP
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -10,7 +9,7 @@ const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('game
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 
-// 2. LIGHTING (No changes)
+// 2. LIGHTING
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
 scene.add(ambientLight);
 const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -18,7 +17,7 @@ directionalLight.position.set(10, 20, 5);
 directionalLight.castShadow = true;
 scene.add(directionalLight);
 
-// 3. GAME OBJECTS (No changes)
+// 3. GAME OBJECTS
 const floorGeometry = new THREE.PlaneGeometry(30, 30);
 const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22 });
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
@@ -42,73 +41,52 @@ const scoreElement = document.getElementById('score');
 const clock = new THREE.Clock();
 const playerState = { velocity: new THREE.Vector3(0, 0, 0), speed: 5, jumpStrength: 7, onGround: true };
 
-// --- UPDATED: ROBLOX-STYLE CODED CHARACTER ---
+// PROCEDURALLY CODED ROBLOX-STYLE CHARACTER
 function createCodedCharacter() {
     const playerGroup = new THREE.Group();
-    const characterMaterial = new THREE.MeshStandardMaterial({ color: 0xdedede, roughness: 0.8 }); // Light grey, less shiny
-    const skinMaterial = new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.8 }); // Skin tone
+    const skinMaterial = new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.8 }); 
 
-    // -- Thicker Body --
-    // We make it wider (X) and deeper (Z)
     const body = new THREE.Mesh(
-        new THREE.BoxGeometry(1.2, 1.5, 0.6), // Was (1, 1.5, 0.5)
-        new THREE.MeshStandardMaterial({ color: 0x0077ff }) // Blue torso
+        new THREE.BoxGeometry(1.2, 1.5, 0.6),
+        new THREE.MeshStandardMaterial({ color: 0x0077ff })
     );
-    body.position.y = 1.4 + 1.5 / 2; // Position it on top of the legs
+    body.position.y = 1.4 + 1.5 / 2;
     playerGroup.add(body);
 
-    // -- Cylinder Head with Rounded Edges --
-    // CapsuleGeometry(radius, length of cylinder part, cap segments, radial segments)
-    const head = new THREE.Mesh(
-        new CapsuleGeometry(0.45, 0.3, 8, 16), // Was SphereGeometry
-        skinMaterial
-    );
-    head.position.y = body.position.y + 1.5 / 2 + (0.3 / 2) + 0.45; // Position on top of body
+    const head = new THREE.Mesh(new CapsuleGeometry(0.45, 0.3, 8, 16), skinMaterial);
+    head.position.y = body.position.y + 1.5 / 2 + 0.3 / 2 + 0.45;
     playerGroup.add(head);
 
-    // -- Thicker Arms --
-    const armL = new THREE.Mesh(
-        new THREE.BoxGeometry(0.45, 1.4, 0.45), // Was (0.25, 1.2, 0.25)
-        skinMaterial
-    );
-    // Position arms at the side of the thicker body
-    armL.position.set(-(1.2/2 + 0.45/2), body.position.y + 0.05, 0); 
+    const armL = new THREE.Mesh(new THREE.BoxGeometry(0.45, 1.4, 0.45), skinMaterial);
+    armL.position.set(-(1.2 / 2 + 0.45 / 2), body.position.y + 0.05, 0);
     playerGroup.add(armL);
-    
+
     const armR = armL.clone();
-    armR.position.x = (1.2/2 + 0.45/2);
+    armR.position.x = 1.2 / 2 + 0.45 / 2;
     playerGroup.add(armR);
 
-    // -- Thicker Legs --
     const legL = new THREE.Mesh(
-        new THREE.BoxGeometry(0.5, 1.4, 0.5), // Was (0.3, 1.5, 0.3)
-        new THREE.MeshStandardMaterial({ color: 0x333333 }) // Dark grey pants
+        new THREE.BoxGeometry(0.5, 1.4, 0.5),
+        new THREE.MeshStandardMaterial({ color: 0x333333 })
     );
-    legL.position.set(-(1.2 / 4), 1.4 / 2, 0); // Position legs under the body
+    legL.position.set(-(1.2 / 4), 1.4 / 2, 0);
     playerGroup.add(legL);
-    
+
     const legR = legL.clone();
-    legR.position.x = (1.2 / 4);
+    legR.position.x = 1.2 / 4;
     playerGroup.add(legR);
 
     playerGroup.userData.limbs = { armL, armR, legL, legR };
-    
-    playerGroup.traverse(child => {
-        if (child.isMesh) {
-            child.castShadow = true;
-        }
-    });
-
+    playerGroup.traverse(child => { if (child.isMesh) { child.castShadow = true; } });
     return playerGroup;
 }
 
 const player = createCodedCharacter();
-// We need to move the entire player group up so the legs are on the ground
-player.position.y = -0.7; // Fine-tune this value if needed
+player.position.y = -0.7; // Adjust group pivot to place feet on ground
 scene.add(player);
 
 
-// Keyboard & Touch Controls (No changes to this section)
+// Keyboard & Touch Controls
 const keys = { w: false, a: false, s: false, d: false, arrowup: false, arrowleft: false, arrowdown: false, arrowright: false, ' ': false };
 window.addEventListener('keydown', (e) => (keys[e.key.toLowerCase()] = true));
 window.addEventListener('keyup', (e) => (keys[e.key.toLowerCase()] = false));
@@ -128,7 +106,6 @@ window.addEventListener('touchmove', handleTouchMove, { passive: false });
 window.addEventListener('touchend', handleTouchEnd, { passive: false });
 window.addEventListener('touchcancel', handleTouchEnd, { passive: false });
 
-
 // 5. GAME LOOP
 function animate() {
     requestAnimationFrame(animate);
@@ -145,8 +122,6 @@ function animate() {
     }
     
     const isMoving = moveInput.lengthSq() > 0;
-
-    // Procedural animation (no changes needed here)
     if (isMoving) {
         const swingAngle = Math.sin(elapsedTime * 10) * 0.5;
         player.userData.limbs.armL.rotation.x = swingAngle;
@@ -170,11 +145,9 @@ function animate() {
         player.lookAt(player.position.x + moveDirection.x, player.position.y, player.position.z + moveDirection.z);
     }
 
-    // Physics (Adjusted for player group's pivot)
+    const groundLevel = -0.7;
     playerState.velocity.y -= 9.8 * deltaTime;
     player.position.y += playerState.velocity.y * deltaTime;
-    // The ground is now at the player group's Y position
-    const groundLevel = -0.7; 
     if (player.position.y <= groundLevel) {
         player.position.y = groundLevel;
         playerState.velocity.y = 0;
