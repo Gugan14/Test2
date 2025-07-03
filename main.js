@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-// REMOVED: No more GLTFLoader needed
+// NEW: We need to import the CapsuleGeometry since it's not a core geometry
+import { CapsuleGeometry } from 'three/addons/geometries/CapsuleGeometry.js';
 
 // 1. SCENE SETUP (No changes)
 const scene = new THREE.Scene();
@@ -17,14 +18,13 @@ directionalLight.position.set(10, 20, 5);
 directionalLight.castShadow = true;
 scene.add(directionalLight);
 
-// 3. GAME OBJECTS
+// 3. GAME OBJECTS (No changes)
 const floorGeometry = new THREE.PlaneGeometry(30, 30);
 const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22 });
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
 floor.rotation.x = -Math.PI / 2;
 floor.receiveShadow = true;
 scene.add(floor);
-
 const coins = [];
 const coinGeometry = new THREE.SphereGeometry(0.3, 16, 16);
 const coinMaterial = new THREE.MeshStandardMaterial({ color: 0xffd700 });
@@ -40,59 +40,59 @@ for (let i = 0; i < 10; i++) {
 let score = 0;
 const scoreElement = document.getElementById('score');
 const clock = new THREE.Clock();
+const playerState = { velocity: new THREE.Vector3(0, 0, 0), speed: 5, jumpStrength: 7, onGround: true };
 
-const playerState = {
-    velocity: new THREE.Vector3(0, 0, 0),
-    speed: 5,
-    jumpStrength: 7,
-    onGround: true,
-};
-
-// --- NEW: PROCEDURALLY CREATED CHARACTER ---
+// --- UPDATED: ROBLOX-STYLE CODED CHARACTER ---
 function createCodedCharacter() {
     const playerGroup = new THREE.Group();
+    const characterMaterial = new THREE.MeshStandardMaterial({ color: 0xdedede, roughness: 0.8 }); // Light grey, less shiny
+    const skinMaterial = new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.8 }); // Skin tone
 
-    // Use a single material for all parts for efficiency
-    const characterMaterial = new THREE.MeshStandardMaterial({ color: 0xffff00 }); // Bright Yellow
-
-    // Body
+    // -- Thicker Body --
+    // We make it wider (X) and deeper (Z)
     const body = new THREE.Mesh(
-        new THREE.BoxGeometry(1, 1.5, 0.5),
-        characterMaterial
+        new THREE.BoxGeometry(1.2, 1.5, 0.6), // Was (1, 1.5, 0.5)
+        new THREE.MeshStandardMaterial({ color: 0x0077ff }) // Blue torso
     );
-    body.position.y = 1.25;
+    body.position.y = 1.4 + 1.5 / 2; // Position it on top of the legs
     playerGroup.add(body);
 
-    // Head
+    // -- Cylinder Head with Rounded Edges --
+    // CapsuleGeometry(radius, length of cylinder part, cap segments, radial segments)
     const head = new THREE.Mesh(
-        new THREE.SphereGeometry(0.5, 16, 16),
-        characterMaterial
+        new CapsuleGeometry(0.45, 0.3, 8, 16), // Was SphereGeometry
+        skinMaterial
     );
-    head.position.y = 2.5;
+    head.position.y = body.position.y + 1.5 / 2 + (0.3 / 2) + 0.45; // Position on top of body
     playerGroup.add(head);
 
-    // Arms
-    const armL = new THREE.Mesh(new THREE.BoxGeometry(0.25, 1.2, 0.25), characterMaterial);
-    armL.position.set(-0.75, 1.4, 0);
+    // -- Thicker Arms --
+    const armL = new THREE.Mesh(
+        new THREE.BoxGeometry(0.45, 1.4, 0.45), // Was (0.25, 1.2, 0.25)
+        skinMaterial
+    );
+    // Position arms at the side of the thicker body
+    armL.position.set(-(1.2/2 + 0.45/2), body.position.y + 0.05, 0); 
     playerGroup.add(armL);
     
     const armR = armL.clone();
-    armR.position.x = 0.75;
+    armR.position.x = (1.2/2 + 0.45/2);
     playerGroup.add(armR);
 
-    // Legs
-    const legL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.5, 0.3), characterMaterial);
-    legL.position.set(-0.3, 0.75, 0);
+    // -- Thicker Legs --
+    const legL = new THREE.Mesh(
+        new THREE.BoxGeometry(0.5, 1.4, 0.5), // Was (0.3, 1.5, 0.3)
+        new THREE.MeshStandardMaterial({ color: 0x333333 }) // Dark grey pants
+    );
+    legL.position.set(-(1.2 / 4), 1.4 / 2, 0); // Position legs under the body
     playerGroup.add(legL);
     
     const legR = legL.clone();
-    legR.position.x = 0.3;
+    legR.position.x = (1.2 / 4);
     playerGroup.add(legR);
 
-    // To animate parts, we need to access them later
     playerGroup.userData.limbs = { armL, armR, legL, legR };
     
-    // Make sure all parts cast shadows
     playerGroup.traverse(child => {
         if (child.isMesh) {
             child.castShadow = true;
@@ -103,6 +103,8 @@ function createCodedCharacter() {
 }
 
 const player = createCodedCharacter();
+// We need to move the entire player group up so the legs are on the ground
+player.position.y = -0.7; // Fine-tune this value if needed
 scene.add(player);
 
 
@@ -144,22 +146,19 @@ function animate() {
     
     const isMoving = moveInput.lengthSq() > 0;
 
-    // --- PROCEDURAL ANIMATION ---
+    // Procedural animation (no changes needed here)
     if (isMoving) {
-        // Swing arms and legs
         const swingAngle = Math.sin(elapsedTime * 10) * 0.5;
         player.userData.limbs.armL.rotation.x = swingAngle;
         player.userData.limbs.armR.rotation.x = -swingAngle;
         player.userData.limbs.legL.rotation.x = -swingAngle;
         player.userData.limbs.legR.rotation.x = swingAngle;
     } else {
-        // Return limbs to neutral position
         player.userData.limbs.armL.rotation.x = 0;
         player.userData.limbs.armR.rotation.x = 0;
         player.userData.limbs.legL.rotation.x = 0;
         player.userData.limbs.legR.rotation.x = 0;
     }
-
 
     if (isMoving) {
         const isKeyboard = !joystickState.active;
@@ -171,10 +170,13 @@ function animate() {
         player.lookAt(player.position.x + moveDirection.x, player.position.y, player.position.z + moveDirection.z);
     }
 
+    // Physics (Adjusted for player group's pivot)
     playerState.velocity.y -= 9.8 * deltaTime;
     player.position.y += playerState.velocity.y * deltaTime;
-    if (player.position.y <= 0) {
-        player.position.y = 0;
+    // The ground is now at the player group's Y position
+    const groundLevel = -0.7; 
+    if (player.position.y <= groundLevel) {
+        player.position.y = groundLevel;
         playerState.velocity.y = 0;
         playerState.onGround = true;
     }
@@ -202,7 +204,6 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-// Start the game loop directly
 animate();
 
 window.addEventListener('resize', () => {
