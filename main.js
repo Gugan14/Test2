@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { CapsuleGeometry } from 'three/addons/geometries/CapsuleGeometry.js';
+// FIX #1: Import the addon using its full, direct URL. This is more reliable.
+import { CapsuleGeometry } from 'https://unpkg.com/three@0.161.0/examples/jsm/geometries/CapsuleGeometry.js';
 
 // 1. SCENE SETUP
 const scene = new THREE.Scene();
@@ -18,12 +19,14 @@ directionalLight.castShadow = true;
 scene.add(directionalLight);
 
 // 3. GAME OBJECTS
-const floorGeometry = new THREE.PlaneGeometry(30, 30);
-const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22 });
-const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(30, 30),
+    new THREE.MeshStandardMaterial({ color: 0x228b22 })
+);
 floor.rotation.x = -Math.PI / 2;
 floor.receiveShadow = true;
 scene.add(floor);
+
 const coins = [];
 const coinGeometry = new THREE.SphereGeometry(0.3, 16, 16);
 const coinMaterial = new THREE.MeshStandardMaterial({ color: 0xffd700 });
@@ -41,7 +44,6 @@ const scoreElement = document.getElementById('score');
 const clock = new THREE.Clock();
 const playerState = { velocity: new THREE.Vector3(0, 0, 0), speed: 5, jumpStrength: 7, onGround: true };
 
-// PROCEDURALLY CODED ROBLOX-STYLE CHARACTER
 function createCodedCharacter() {
     const playerGroup = new THREE.Group();
     const skinMaterial = new THREE.MeshStandardMaterial({ color: 0xffdbac, roughness: 0.8 });
@@ -53,10 +55,8 @@ function createCodedCharacter() {
     body.position.y = 1.4 + 1.5 / 2;
     playerGroup.add(body);
 
-    // --- THIS IS THE CORRECTED LINE ---
+    // FIX #2: Use 'new CapsuleGeometry', not 'new THREE.CapsuleGeometry'
     const head = new THREE.Mesh(new CapsuleGeometry(0.45, 0.3, 8, 16), skinMaterial);
-    // ------------------------------------
-    
     head.position.y = body.position.y + 1.5 / 2 + 0.3 / 2 + 0.45;
     playerGroup.add(head);
 
@@ -88,8 +88,6 @@ const player = createCodedCharacter();
 player.position.y = -0.7;
 scene.add(player);
 
-
-// Keyboard & Touch Controls
 const keys = { w: false, a: false, s: false, d: false, arrowup: false, arrowleft: false, arrowdown: false, arrowright: false, ' ': false };
 window.addEventListener('keydown', (e) => (keys[e.key.toLowerCase()] = true));
 window.addEventListener('keyup', (e) => (keys[e.key.toLowerCase()] = false));
@@ -109,81 +107,21 @@ window.addEventListener('touchmove', handleTouchMove, { passive: false });
 window.addEventListener('touchend', handleTouchEnd, { passive: false });
 window.addEventListener('touchcancel', handleTouchEnd, { passive: false });
 
-// 5. GAME LOOP
 function animate() {
     requestAnimationFrame(animate);
     const deltaTime = clock.getDelta();
     const elapsedTime = clock.getElapsedTime();
-
     const moveInput = new THREE.Vector2();
-    if (joystickState.active) {
-        moveInput.set(joystickState.move.x, joystickState.move.y);
-    } else {
-        let y = 0; if (keys.w || keys.arrowup) y = 1; if (keys.s || keys.arrowdown) y = -1;
-        let x = 0; if (keys.a || keys.arrowleft) x = -1; if (keys.d || keys.arrowright) x = 1;
-        moveInput.set(x, y);
-    }
-    
+    if (joystickState.active) { moveInput.set(joystickState.move.x, joystickState.move.y); } else { let y = 0; if (keys.w || keys.arrowup) y = 1; if (keys.s || keys.arrowdown) y = -1; let x = 0; if (keys.a || keys.arrowleft) x = -1; if (keys.d || keys.arrowright) x = 1; moveInput.set(x, y); }
     const isMoving = moveInput.lengthSq() > 0;
-    if (isMoving) {
-        const swingAngle = Math.sin(elapsedTime * 10) * 0.5;
-        player.userData.limbs.armL.rotation.x = swingAngle;
-        player.userData.limbs.armR.rotation.x = -swingAngle;
-        player.userData.limbs.legL.rotation.x = -swingAngle;
-        player.userData.limbs.legR.rotation.x = swingAngle;
-    } else {
-        player.userData.limbs.armL.rotation.x = 0;
-        player.userData.limbs.armR.rotation.x = 0;
-        player.userData.limbs.legL.rotation.x = 0;
-        player.userData.limbs.legR.rotation.x = 0;
-    }
-
-    if (isMoving) {
-        const isKeyboard = !joystickState.active;
-        const forwardDirection = isKeyboard ? moveInput.y : -moveInput.y;
-        const moveDirection = new THREE.Vector3(moveInput.x, 0, -forwardDirection);
-        moveDirection.normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), cameraState.orbit.x);
-        player.position.x += moveDirection.x * playerState.speed * deltaTime;
-        player.position.z += moveDirection.z * playerState.speed * deltaTime;
-        player.lookAt(player.position.x + moveDirection.x, player.position.y, player.position.z + moveDirection.z);
-    }
-
-    const groundLevel = -0.7;
-    playerState.velocity.y -= 9.8 * deltaTime;
-    player.position.y += playerState.velocity.y * deltaTime;
-    if (player.position.y <= groundLevel) {
-        player.position.y = groundLevel;
-        playerState.velocity.y = 0;
-        playerState.onGround = true;
-    }
+    if (isMoving) { const swingAngle = Math.sin(elapsedTime * 10) * 0.5; player.userData.limbs.armL.rotation.x = swingAngle; player.userData.limbs.armR.rotation.x = -swingAngle; player.userData.limbs.legL.rotation.x = -swingAngle; player.userData.limbs.legR.rotation.x = swingAngle; } else { player.userData.limbs.armL.rotation.x = 0; player.userData.limbs.armR.rotation.x = 0; player.userData.limbs.legL.rotation.x = 0; player.userData.limbs.legR.rotation.x = 0; }
+    if (isMoving) { const isKeyboard = !joystickState.active; const forwardDirection = isKeyboard ? moveInput.y : -moveInput.y; const moveDirection = new THREE.Vector3(moveInput.x, 0, -forwardDirection); moveDirection.normalize().applyAxisAngle(new THREE.Vector3(0, 1, 0), cameraState.orbit.x); player.position.x += moveDirection.x * playerState.speed * deltaTime; player.position.z += moveDirection.z * playerState.speed * deltaTime; player.lookAt(player.position.x + moveDirection.x, player.position.y, player.position.z + moveDirection.z); }
+    const groundLevel = -0.7; playerState.velocity.y -= 9.8 * deltaTime; player.position.y += playerState.velocity.y * deltaTime;
+    if (player.position.y <= groundLevel) { player.position.y = groundLevel; playerState.velocity.y = 0; playerState.onGround = true; }
     if (keys[' ']) { handleJump(); keys[' '] = false; }
-
-    for (let i = coins.length - 1; i >= 0; i--) {
-        const coin = coins[i];
-        coin.rotation.y += 2 * deltaTime;
-        if (player.position.distanceTo(coin.position) < 1.5) {
-            scene.remove(coin);
-            coins.splice(i, 1);
-            score++;
-            scoreElement.innerText = `Score: ${score}`;
-            if (coins.length === 0) { scoreElement.innerText = `You Win! Final Score: ${score}`; }
-        }
-    }
-    
-    const camOffset = new THREE.Vector3();
-    camOffset.x = cameraState.distance * Math.sin(cameraState.orbit.x) * Math.cos(cameraState.orbit.y);
-    camOffset.y = cameraState.distance * Math.sin(cameraState.orbit.y);
-    camOffset.z = cameraState.distance * Math.cos(cameraState.orbit.x) * Math.cos(cameraState.orbit.y);
-    camera.position.copy(player.position).add(camOffset);
-    camera.lookAt(player.position);
-    
+    for (let i = coins.length - 1; i >= 0; i--) { const coin = coins[i]; coin.rotation.y += 2 * deltaTime; if (player.position.distanceTo(coin.position) < 1.5) { scene.remove(coin); coins.splice(i, 1); score++; scoreElement.innerText = `Score: ${score}`; if (coins.length === 0) { scoreElement.innerText = `You Win! Final Score: ${score}`; } } }
+    const camOffset = new THREE.Vector3(); camOffset.x = cameraState.distance * Math.sin(cameraState.orbit.x) * Math.cos(cameraState.orbit.y); camOffset.y = cameraState.distance * Math.sin(cameraState.orbit.y); camOffset.z = cameraState.distance * Math.cos(cameraState.orbit.x) * Math.cos(cameraState.orbit.y); camera.position.copy(player.position).add(camOffset); camera.lookAt(player.position);
     renderer.render(scene, camera);
 }
-
 animate();
-
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
+window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
