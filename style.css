@@ -2,11 +2,7 @@ body {
     margin: 0;
     overflow: hidden; /* Hide scrollbars */
     font-family: Arial, sans-serif;
-    /* Prevent text selection when dragging joystick */
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+    background-color: #000;
 }
 
 #game-canvas {
@@ -21,6 +17,8 @@ body {
     left: 10px;
     color: white;
     text-shadow: 2px 2px 4px #000000;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 #score {
@@ -28,31 +26,28 @@ body {
     font-weight: bold;
 }
 
-/* --- Joystick Styles --- */
-#joystick-base {
-    display: none; /* Hidden by default */
+/* Joystick Styles */
+#joystick-container {
     position: absolute;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#joystick-base {
     width: 120px;
     height: 120px;
-    background: rgba(128, 128, 128, 0.5);
+    background-color: rgba(0, 0, 0, 0.2);
     border-radius: 50%;
-    /* Centering trick */
-    transform: translate(-50%, -50%);
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-#joystick-stick {
+#joystick-knob {
+    width: 50px;
+    height: 50px;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
     position: absolute;
-    width: 60px;
-    height: 60px;
-    background: rgba(200, 200, 200, 0.8);
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    /* Centering trick */
-    transform: translate(-50%, -50%);
-}
-
-/* We will add this class with JS to show the joystick */
-#joystick-base.visible {
-    display: block;
 }
