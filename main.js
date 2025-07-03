@@ -1,61 +1,51 @@
 import * as THREE from 'three';
 
-// 1. SCENE SETUP
+// 1. SCENE SETUP (No changes)
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87ceeb); // Sky blue background
-
+scene.background = new THREE.Color(0x87ceeb);
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 5, 10);
 camera.lookAt(0, 0, 0);
-
 const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('game-canvas'), antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 
-// 2. LIGHTING
+// 2. LIGHTING (No changes)
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
 scene.add(ambientLight);
-
 const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
 directionalLight.position.set(10, 20, 5);
 directionalLight.castShadow = true;
 scene.add(directionalLight);
 
-// 3. GAME OBJECTS
+// 3. GAME OBJECTS (No changes)
 // Floor
 const floorGeometry = new THREE.PlaneGeometry(30, 30);
-const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22 }); // Forest green
+const floorMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22 });
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-floor.rotation.x = -Math.PI / 2; // Rotate it to be flat
+floor.rotation.x = -Math.PI / 2;
 floor.receiveShadow = true;
 scene.add(floor);
-
 // Player
 const playerGeometry = new THREE.BoxGeometry(1, 1, 1);
-const playerMaterial = new THREE.MeshStandardMaterial({ color: 0xff4500 }); // Orange-red
+const playerMaterial = new THREE.MeshStandardMaterial({ color: 0xff4500 });
 const player = new THREE.Mesh(playerGeometry, playerMaterial);
 player.position.y = 0.5;
 player.castShadow = true;
 scene.add(player);
-
 // Coins
 const coins = [];
 const coinGeometry = new THREE.SphereGeometry(0.3, 16, 16);
-const coinMaterial = new THREE.MeshStandardMaterial({ color: 0xffd700 }); // Gold
-
+const coinMaterial = new THREE.MeshStandardMaterial({ color: 0xffd700 });
 for (let i = 0; i < 10; i++) {
     const coin = new THREE.Mesh(coinGeometry, coinMaterial);
-    coin.position.set(
-        (Math.random() - 0.5) * 25,
-        0.5,
-        (Math.random() - 0.5) * 25
-    );
+    coin.position.set((Math.random() - 0.5) * 25, 0.5, (Math.random() - 0.5) * 25);
     coin.castShadow = true;
     coins.push(coin);
     scene.add(coin);
 }
 
-// 4. GAME LOGIC & CONTROLS
+// 4. GAME LOGIC & CONTROLS (All changes are in this section)
 let score = 0;
 const scoreElement = document.getElementById('score');
 const clock = new THREE.Clock();
@@ -67,7 +57,7 @@ const playerState = {
     onGround: true,
 };
 
-// Keyboard Controls
+// Keyboard Controls (No changes here)
 const keys = {
     w: false, a: false, s: false, d: false,
     arrowup: false, arrowleft: false, arrowdown: false, arrowright: false,
@@ -81,11 +71,15 @@ const joystickContainer = document.getElementById('joystick-container');
 const joystickBase = document.getElementById('joystick-base');
 const joystickKnob = document.getElementById('joystick-knob');
 
+// --- FIXED ---
+// Define the radius as a constant that matches the CSS (120px width / 2)
+const JOYSTICK_RADIUS = 60;
+
 const joystickState = {
     active: false,
     center: { x: 0, y: 0 },
     move: new THREE.Vector2(0, 0),
-    radius: joystickBase.offsetWidth / 2,
+    // REMOVED: radius property that was calculated incorrectly
 };
 
 function handleTouchStart(event) {
@@ -96,8 +90,9 @@ function handleTouchStart(event) {
     joystickState.center.y = touch.clientY;
     
     joystickContainer.style.display = 'block';
-    joystickContainer.style.left = `${touch.clientX - joystickState.radius}px`;
-    joystickContainer.style.top = `${touch.clientY - joystickState.radius}px`;
+    // --- FIXED --- Use the constant JOYSTICK_RADIUS for positioning
+    joystickContainer.style.left = `${touch.clientX - JOYSTICK_RADIUS}px`;
+    joystickContainer.style.top = `${touch.clientY - JOYSTICK_RADIUS}px`;
 }
 
 function handleTouchMove(event) {
@@ -110,12 +105,14 @@ function handleTouchMove(event) {
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     const angle = Math.atan2(deltaY, deltaX);
     
-    const knobX = Math.min(distance, joystickState.radius) * Math.cos(angle);
-    const knobY = Math.min(distance, joystickState.radius) * Math.sin(angle);
+    // --- FIXED --- Use the constant JOYSTICK_RADIUS for clamping
+    const knobX = Math.min(distance, JOYSTICK_RADIUS) * Math.cos(angle);
+    const knobY = Math.min(distance, JOYSTICK_RADIUS) * Math.sin(angle);
     joystickKnob.style.transform = `translate(${knobX}px, ${knobY}px)`;
     
-    joystickState.move.x = deltaX / joystickState.radius;
-    joystickState.move.y = deltaY / joystickState.radius;
+    // --- FIXED --- Use the constant JOYSTICK_RADIUS for calculation
+    joystickState.move.x = deltaX / JOYSTICK_RADIUS;
+    joystickState.move.y = deltaY / JOYSTICK_RADIUS;
     joystickState.move.clampLength(0, 1);
 }
 
@@ -129,21 +126,19 @@ function handleTouchEnd(event) {
     joystickState.move.set(0, 0);
 }
 
-// Add touch event listeners for joystick
+// Add touch event listeners for joystick (No changes here)
 window.addEventListener('touchstart', handleTouchStart, { passive: false });
 window.addEventListener('touchmove', handleTouchMove, { passive: false });
 window.addEventListener('touchend', handleTouchEnd, { passive: false });
 window.addEventListener('touchcancel', handleTouchEnd, { passive: false });
 
 
-// 5. GAME LOOP
+// 5. GAME LOOP (No changes)
 function animate() {
     requestAnimationFrame(animate);
     const deltaTime = clock.getDelta();
 
-    // Player Movement (combining keyboard and joystick)
     const moveDirection = new THREE.Vector3(0, 0, 0);
-    
     if (joystickState.active) {
         moveDirection.x = joystickState.move.x;
         moveDirection.z = joystickState.move.y;
@@ -160,39 +155,32 @@ function animate() {
         player.position.z += moveDirection.z * playerState.speed * deltaTime;
     }
     
-    // Player Physics (Gravity & Jumping)
-    playerState.velocity.y -= 9.8 * deltaTime; // Gravity
+    playerState.velocity.y -= 9.8 * deltaTime;
     player.position.y += playerState.velocity.y * deltaTime;
-
     if (player.position.y <= 0.5) {
         player.position.y = 0.5;
         playerState.velocity.y = 0;
         playerState.onGround = true;
     }
-
-    if (keys[' '] && playerState.onGround) { // Jump with Spacebar
+    if (keys[' '] && playerState.onGround) {
         playerState.velocity.y = playerState.jumpStrength;
         playerState.onGround = false;
     }
 
-    // Coin Animation & Collision
     for (let i = coins.length - 1; i >= 0; i--) {
         const coin = coins[i];
-        coin.rotation.y += 2 * deltaTime; // Spin the coin
-
+        coin.rotation.y += 2 * deltaTime;
         if (player.position.distanceTo(coin.position) < 0.8) {
             scene.remove(coin);
             coins.splice(i, 1);
             score++;
             scoreElement.innerText = `Score: ${score}`;
-
             if (coins.length === 0) {
                 scoreElement.innerText = `You Win! Final Score: ${score}`;
             }
         }
     }
     
-    // Update camera to follow player
     camera.position.x = player.position.x;
     camera.position.z = player.position.z + 10;
     
@@ -204,7 +192,7 @@ window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
-    joystickState.radius = joystickBase.offsetWidth / 2;
+    // --- REMOVED --- The faulty radius recalculation is no longer needed.
 });
 
 // Start the game loop
