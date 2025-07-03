@@ -51,3 +51,32 @@ body {
     border-radius: 50%;
     position: absolute;
 }
+
+/* Jump Button Styles */
+#jump-button-container {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#jump-button {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.4);
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    /* Hide on desktop, show on touch devices */
+    display: none;
+}
+
+/* A media query to show the button only on devices with touchscreens */
+@media (pointer: coarse) {
+    #jump-button {
+        display: block;
+    }
+}
