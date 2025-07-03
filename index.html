@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>3D Coin Collector</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -13,6 +13,13 @@
     <!-- UI Elements -->
     <div id="ui">
         <div id="score">Score: 0</div>
+    </div>
+
+    <!-- Joystick elements -->
+    <div id="joystick-container" style="display: none;">
+        <div id="joystick-base">
+            <div id="joystick-knob"></div>
+        </div>
     </div>
 
     <!-- Import Three.js from a CDN -->
