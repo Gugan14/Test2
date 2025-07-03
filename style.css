@@ -2,6 +2,11 @@ body {
     margin: 0;
     overflow: hidden; /* Hide scrollbars */
     font-family: Arial, sans-serif;
+    /* Prevent text selection when dragging joystick */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 #game-canvas {
@@ -21,4 +26,33 @@ body {
 #score {
     font-size: 24px;
     font-weight: bold;
+}
+
+/* --- Joystick Styles --- */
+#joystick-base {
+    display: none; /* Hidden by default */
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    background: rgba(128, 128, 128, 0.5);
+    border-radius: 50%;
+    /* Centering trick */
+    transform: translate(-50%, -50%);
+}
+
+#joystick-stick {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: rgba(200, 200, 200, 0.8);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    /* Centering trick */
+    transform: translate(-50%, -50%);
+}
+
+/* We will add this class with JS to show the joystick */
+#joystick-base.visible {
+    display: block;
 }
